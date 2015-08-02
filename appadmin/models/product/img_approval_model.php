@@ -113,6 +113,29 @@ class Img_approval_model extends CI_Model {
     }
     
     
+    function approval_tweet($tid, $base_value) {
+    	$this->db->where('tid', $tid);
+    	$data = array('base_value' => $base_value);
+    	$result = $this->db->update($this->table_name, $data);
+    	log_message('error', 'approval_result:'.var_export($result, true));
+    	if((false === $result) || (0 == $this->db->affected_rows())) {
+    		return 0;
+    	}
+    	return $this->db->affected_rows();
+    }
+    
+    
+    function delete_tweet($tid_array) {
+    	$this->db->where_in('tid', $tid_array);
+    	$data = array('is_del' => 1, 'dtime' => time());
+    	$result = $this->db->update($this->table_name, $data);
+    	log_message('error', 'delete_result:'.var_export($result, true));
+    	if((false === $result) || (0 == $this->db->affected_rows())) {
+    		return 0;
+    	}
+    	return $this->db->affected_rows();
+    }
+    
     
     
     /**

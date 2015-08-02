@@ -92,9 +92,19 @@ class img_approval extends MY_Controller{
     function test() {
     	$request = $this->request_array;
     	$response = $this->response_array;
+    	
+    	$tids = $request['tids'];
+    	$tid_array = explode(',', $tids);
+    	print_r($tid_array);
+    	exit;
+    	
+    	
+    	
     	$tid = 614271491118215168;
     	//$tweet = $this->img_approval_model->get_tweet($tid);
-    	//$tweet = $this->img_approval_model->get_tweet_info($tid);
+    	$tweet = $this->img_approval_model->get_tweet_info($tid);
+    	print_r(json_encode($tweet));
+    	exit;
     	$uid = 1;
     	$data = $this->user_detail_model->get_info_by_uid($uid);
     	//print_r(json_encode($data));
@@ -222,163 +232,51 @@ class img_approval extends MY_Controller{
     }
     
     
-    private function get_img_list_by_ios(&$response, $timestamp){
-    	$img_timestamp = $this->redis->get($this->key_img);
-    	
-    	$result = array();
-    	if (isset($timestamp) && $timestamp > $img_timestamp) {
-    		$response['errno'] = 901;
-    		$response['data']['content'] = $result;
-    	} else {
-	    	$where_array[]="is_deleted=1";
-	    
-	    	if(is_array($where_array) and count($where_array)>0){
-	    		$where=' WHERE '.join(' AND ',$where_array);
-	    	}
-	    
-	    	$row_num=$this->imgmgr_model->get_count_by_parm($where);
-	    	$limit="LIMIT $row_num";
-	    	$list_data=$this->imgmgr_model->get_data_by_parm($where,$limit);
-	    
-	    	//$img_type_list = array('1'=>'素描','2'=>'色彩','3'=>'速写','4'=>'设计','5'=>'创作','6'=>'照片');
-	    	$img_type_list = $this->mis_imgmgr['imgmgr_level_1'];
-	    	
-    		foreach($list_data as $img_data) {
-    			$tmp_array = array('name' => $img_data['title'], 'img' => $img_data['img_url']);
-    			if ($img_data['img_type'] == 1) {
-    				if (!isset($sketch_array_tmp[$img_data['cell']])) {
-    					$sketch_array_tmp[$img_data['cell']][] = $tmp_array;
-    				} else {
-    					array_push($sketch_array_tmp[$img_data['cell']], $tmp_array);
-    				}
-    				$sketch_array = array_values($sketch_array_tmp);
-    			} elseif ($img_data['img_type'] == 2) {
-    				if (!isset($color_painting_array_tmp[$img_data['cell']])) {
-    					$color_painting_array_tmp[$img_data['cell']][] = $tmp_array;
-    				} else {
-    					array_push($color_painting_array_tmp[$img_data['cell']], $tmp_array);
-    				}
-    				$color_painting_array = array_values($color_painting_array_tmp);
-    			} elseif ($img_data['img_type'] == 3) {
-    				if (!isset($quick_sketch_array_tmp[$img_data['cell']])) {
-    					$quick_sketch_array_tmp[$img_data['cell']][] = $tmp_array;
-    				} else {
-    					array_push($quick_sketch_array_tmp[$img_data['cell']], $tmp_array);
-    				}
-    				$quick_sketch_array = array_values($quick_sketch_array_tmp);
-    			} elseif ($img_data['img_type'] == 4) {
-    				if (!isset($design_array_tmp[$img_data['cell']])) {
-    					$design_array_tmp[$img_data['cell']][] = $tmp_array;
-    				} else {
-    					array_push($design_array_tmp[$img_data['cell']], $tmp_array);
-    				}
-    				$design_array = array_values($design_array_tmp);
-    			} elseif ($img_data['img_type'] == 5) {
-    				if (!isset($creation_array_tmp[$img_data['cell']])) {
-    					$creation_array_tmp[$img_data['cell']][] = $tmp_array;
-    				} else {
-    					array_push($creation_array_tmp[$img_data['cell']], $tmp_array);
-    				}
-    				$creation_array = array_values($creation_array_tmp);
-    			} elseif ($img_data['img_type'] == 6) {
-    				if (!isset($photo_array_tmp[$img_data['cell']])) {
-    					$photo_array_tmp[$img_data['cell']][] = $tmp_array;
-    				} else {
-    					array_push($photo_array_tmp[$img_data['cell']], $tmp_array);
-    				}
-    				$photo_array = array_values($photo_array_tmp);
-    			}
-    		}
-	    
-	    	if(count($sketch_array) > 0) {
-	    		$result['sketch'] = $sketch_array;
-	    	}
-	    	if(count($color_painting_array) > 0) {
-	    		$result['color_painting'] = $color_painting_array;
-	    	}
-	    	if(count($quick_sketch_array) > 0) {
-	    		$result['quick_sketch'] = $quick_sketch_array;
-	    	}
-	    	if(count($design_array) > 0) {
-	    		$result['design'] = $design_array;
-	    	}
-	    	if(count($creation_array) > 0) {
-	    		$result['creation'] = $creation_array;
-	    	}
-	    	if(count($photo_array) > 0) {
-	    		$result['photo'] = $photo_array;
-	    	}
-	    	
-	    	$response['errno'] = 0;
-	    	$response['data']['content'] = $result;
-    	}
+    /**
+     * 对外提供的接口
+     * 审核贴子的接口
+     * 参数：tid,base_value
+     * 返回成功或失败
+     */
+    function tweet_approval(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
     
+    	$tid = $request['tid'];
+    	$base_value = $request['base_value'];
+    
+    	$result = $this->img_approval_model->approval_tweet($tid, $base_value);
+    
+    	$response['data'] = array(
+    			'content' => $result,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
     }
     
     
-    private function get_img_list_by_android(&$response, $timestamp){
-    	$img_timestamp = $this->redis->get($this->key_img);
+    /**
+     * 对外提供的接口
+     * 删除贴子的接口
+     * 参数：tid,base_value
+     * 返回成功或失败
+     */
+    function tweet_delete(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
     	
-    	$result = array();
-    	
-    	if (isset($timestamp) && $timestamp > $img_timestamp) {
-    		$response['errno'] = 901;
-    		$response['data']['content'] = $result;
-    	} else {
-	    	$where_array[]="is_deleted=1";
-	    
-	    	if(is_array($where_array) and count($where_array)>0){
-	    		$where=' WHERE '.join(' AND ',$where_array);
-	    	}
-	    
-	    	$row_num=$this->imgmgr_model->get_count_by_parm($where);
-	    	$limit="LIMIT $row_num";
-	    	$list_data=$this->imgmgr_model->get_data_by_parm($where,$limit);
-	    
-	    	//$img_type_list = array('1'=>'素描','2'=>'色彩','3'=>'速写','4'=>'设计','5'=>'创作','6'=>'照片');
-	    	$img_type_list = $this->mis_imgmgr['imgmgr_level_1'];
-	    	
-    		foreach($list_data as $img_data) {
-	        	$tmp_array = array('name' => $img_data['title'], 'img' => $img_data['img_url']);
-	            if ($img_data['img_type'] == 1) {
-	                $sketch_array[] = $tmp_array;
-	            } elseif ($img_data['img_type'] == 2) {
-	                $color_painting_array[] = $tmp_array;
-	            } elseif ($img_data['img_type'] == 3) {
-	                $quick_sketch_array[] = $tmp_array;
-	            } elseif ($img_data['img_type'] == 4) {
-	                $design_array[] = $tmp_array;
-	            } elseif ($img_data['img_type'] == 5) {
-	                $creation_array[] = $tmp_array;
-	            } elseif ($img_data['img_type'] == 6) {
-	                $photo_array[] = $tmp_array;
-	            }
-	        }
-	    
-	    	if(count($sketch_array) > 0) {
-	    		$result['sketch'] = $sketch_array;
-	    	}
-	    	if(count($color_painting_array) > 0) {
-	    		$result['color_painting'] = $color_painting_array;
-	    	}
-	    	if(count($quick_sketch_array) > 0) {
-	    		$result['quick_sketch'] = $quick_sketch_array;
-	    	}
-	    	if(count($design_array) > 0) {
-	    		$result['design'] = $design_array;
-	    	}
-	    	if(count($creation_array) > 0) {
-	    		$result['creation'] = $creation_array;
-	    	}
-	    	if(count($photo_array) > 0) {
-	    		$result['photo'] = $photo_array;
-	    	}
-	    	
-	    	$response['errno'] = 0;
-	    	$response['data']['content'] = $result;
-    	}
+    	$tids = $request['tids'];
+    	$tid_array = explode(',', $tids);
+    	$result = $this->img_approval_model->delete_tweet($tid_array);
     
+    	$response['data'] = array(
+    			'content' => $result,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
     }
+    
+    
+    
+    
     
     
     /**
