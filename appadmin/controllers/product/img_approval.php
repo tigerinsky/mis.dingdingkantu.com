@@ -13,6 +13,7 @@ class img_approval extends MY_Controller{
 //         $this->load->library('redis');
 //         $this->key_img = 'mis_img_timestamp';
         $this->load->model('product/img_approval_model', 'img_approval_model');
+        $this->load->model('product/user_detail_model', 'user_detail_model');
     }
     
     //默认调用控制器
@@ -82,7 +83,37 @@ class img_approval extends MY_Controller{
         $this->smarty->assign('show_dialog','true');
         $this->smarty->display('imgmgr/imgmgr_list.html');
     }
-
+    
+    
+    /**
+     * 测试接口
+     * 
+     */
+    function test() {
+    	$request = $this->request_array;
+    	$response = $this->response_array;
+    	$tid = 614271491118215168;
+    	//$tweet = $this->img_approval_model->get_tweet($tid);
+    	//$tweet = $this->img_approval_model->get_tweet_info($tid);
+    	$uid = 1;
+    	$data = $this->user_detail_model->get_info_by_uid($uid);
+    	//print_r(json_encode($data));
+    	
+    	$user_detail_info = $this->user_detail_model->get_info_by_uid($uid);
+    	if (isset($user_detail_info['avatar'])) {
+    		$arr_img_info = json_decode($user_detail_info['avatar'], true);
+    		if ($arr_img_info && isset($arr_img_info['img']) && isset($arr_img_info['img']['n']) && isset($arr_img_info['img']['n']['url'])) {
+    			$user_detail_info['avatar'] = $arr_img_info['img']['n']['url'];
+    		} else {
+    			$user_detail_info['avatar'] ="";
+    		}
+    	}
+    	
+    	print_r(json_encode($user_detail_info));
+    	
+    }
+    
+	
     /**
      * 对外提供的接口
      * 返回未审核的贴子列表
@@ -147,8 +178,45 @@ class img_approval extends MY_Controller{
         $list_data = $this->img_approval_model->get_data_by_parm($where, $limit);
         //print_r(json_encode($list_data));
         
+        $res_content = array();
+        foreach($list_data as $item) {
+        	$tid = $item['tid'];
+        	$tweet = $this->img_approval_model->get_tweet_info($tid);
+        	$img_arr = json_decode($tweet['img'], true);
+        	$img_url = $img_arr[0]['n']['url'];
+        	$img_url_s = $img_arr[0]['s']['url'];
+        	
+        	# 用户信息
+        	$uid = $item['uid'];
+        	$user_detail_info = $this->user_detail_model->get_info_by_uid($uid);
+        	if (isset($user_detail_info['avatar'])) {
+        		$arr_img_info = json_decode($user_detail_info['avatar'], true);
+        		if ($arr_img_info && isset($arr_img_info['img']) && isset($arr_img_info['img']['n']) && isset($arr_img_info['img']['n']['url'])) {
+        			$user_detail_info['avatar'] = $arr_img_info['img']['n']['url'];
+        		} else {
+        			$user_detail_info['avatar'] ="";
+        		}
+        	}
         
-        $response['data']['content'] = $list_data;
+        	$res_content[] = array(
+        			'tid' => $tid,
+        			'content' => $item['content'],
+        			'ctime' => $item['ctime'],
+        			'source' => $item['source'],
+        			'city' => $item['city'],
+        			'base_value' => $item['base_value'],
+        			'img_url' => $img_url,
+        			'img_url_s' => $img_url_s,
+        			'uid' => $user_detail_info['uid'],
+        			'sname' => $user_detail_info['sname'],
+        			'avatar' => $user_detail_info['avatar'],
+        	);
+        }
+		
+        $response['data'] = array(
+        		'content' => $res_content,
+        );
+        
         $this->renderJson($response['errno'], $response['data']);
 
     }

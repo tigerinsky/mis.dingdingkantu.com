@@ -5,6 +5,7 @@
 class Img_approval_model extends CI_Model {
     
     private $dbr = null;
+    private $table_name = 'ci_tweet';
     function __construct() {
         parent::__construct();
         $this->dbr = $this->load->database('dbr',TRUE,FALSE);
@@ -52,6 +53,67 @@ class Img_approval_model extends CI_Model {
         }
         return $result;
     }
+    
+    
+    function get_tweet($tid, $fields = '*') {
+    	$this->db->select($fields);
+    	$this->db->from($this->table_name);
+    	$this->db->where('tid', $tid);
+    	$this->db->limit(1);
+    	$result = $this->db->get();
+    	log_message('error', $this->db->last_query());
+    	if (false === $result) {
+    		log_message('error', 'get_tweet error: msg['.$this->db->_error_message().']');
+    		return false;
+    	} else if (0 == $result->num_rows) {
+    		return null;
+    	} else {
+    		return $result->result_array()[0];
+    	}
+    }
+    
+    
+    function get_tweet_info($tid) {
+    	//获取tweet信息
+    	$tweet = array();
+    	$ret = $this->get_tweet($tid);
+    	if (false ===$ret || empty($ret)) {
+    		return $ret;
+    	}
+    
+    	$tweet = $ret;
+    
+    	//get resource
+    	$imgs = array();
+    	if(!empty($ret['resource_id'])) {
+    		$this->load->model('product/Resource_model');
+    		$resource_id = explode(',', $ret['resource_id']);
+    		log_message('error', 'resource_id:'.var_export($resource_id, true));
+    		foreach($resource_id as $rid) {
+    			$ret_resource = $this->Resource_model->get_resource_by_rid($rid);
+    			log_message('error', 'ret_resource:'.var_export($ret_resource, true));
+    			if(false === $ret_resource || empty($ret_resource)) {
+    				break;
+    			}
+    			$img = $ret_resource['img'];
+    			$description = $ret_resource['description'];
+    			if(!empty($img)) {
+    				$img_arr = json_decode($img, true);
+    				log_message('error', 'tweet_model_img_arr------------'.var_export($img_arr, true));
+    				$img_arr['content'] = $description;
+    				log_message('error', 'tweet_model_img_arrrrrr------------'.var_export($img_arr, true));
+    				$imgs[] = $img_arr;
+    			}
+    		}
+    	}
+    	log_message('error', 'tweet_model_imgs------------'.var_export($imgs, true));
+    	$tweet['img'] = json_encode($imgs);
+    	
+    	return $tweet;
+    }
+    
+    
+    
     
     /**
      * 对要闻进行单条推荐或取消推荐
