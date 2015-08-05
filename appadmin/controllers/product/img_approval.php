@@ -193,7 +193,7 @@ class img_approval extends MY_Controller{
         $tweet_num = $this->img_approval_model->get_count_by_parm($where);
         //$pages = pages($tweet_num, $page, $pagesize);
         // 总页数
-        $pages = $tweet_num/$pagesize;
+        $pages = intval($tweet_num/$pagesize);
         $mod = $tweet_num%$pagesize;
         if ($mod!=0) {
         	$pages = $pages + 1;
@@ -205,7 +205,7 @@ class img_approval extends MY_Controller{
         foreach($list_data as $item) {
         	$tid = $item['tid'];
         	$tweet = $this->img_approval_model->get_tweet_info($tid);
-        	$img_arr = json_decode($tweet['img'], true);
+        	$img_arr = json_decode($tweet['imgs'], true);
         	$img_url = $img_arr[0]['n']['url'];
         	$img_url_s = $img_arr[0]['s']['url'];
         	
@@ -238,6 +238,7 @@ class img_approval extends MY_Controller{
 		
         $response['data'] = array(
         		'content' => $res_content,
+        		'pages' => $pages,
         );
         
         $this->renderJson($response['errno'], $response['data']);
@@ -346,18 +347,18 @@ class img_approval extends MY_Controller{
     	$height = $width;
     	
     	$tweet = $this->img_approval_model->get_tweet_info($tid);
-    	$img_arr = json_decode($tweet['img'], true);
+    	$img_arr = json_decode($tweet['imgs'], true);
     	log_message('debug', 'img_arr:'.json_encode($img_arr));
     	$img_url = $img_arr[0]['n']['url'];
     	log_message('debug', 'img_url:'.$img_url);
-    	$img_url = $img_url + '@' + $lon + '-' + $lat + '-' + $width + '-' + $height + 'a';
-    	log_message('debug', 'img_url:'.var_export($img_url, true));
+    	$img_url = $img_url.'@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
+    	log_message('debug', 'img_url_cut:'.$img_url);
     	
     	$img_arr[0]['n']['url'] = $img_url;
     	$resource_id = explode(',', $tweet['resource_id'])[0];
-    	$data = array('img' => json_encode($img_arr));
-    	//log_message('debug', 'data:'.json_encode($data));
-    	//$result = $this->resource_model->update($resource_id, $data);
+    	$data = array('img' => json_encode($img_arr[0]));
+    	log_message('debug', 'data:'.json_encode($data));
+    	$result = $this->resource_model->update($resource_id, $data);
     
     	$response['data'] = array(
     			'content' => $result,

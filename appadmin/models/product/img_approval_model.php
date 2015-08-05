@@ -80,9 +80,9 @@ class Img_approval_model extends CI_Model {
     	if (false ===$ret || empty($ret)) {
     		return $ret;
     	}
-    
+    	
     	$tweet = $ret;
-    
+    	
     	//get resource
     	$imgs = array();
     	if(!empty($ret['resource_id'])) {
@@ -107,8 +107,10 @@ class Img_approval_model extends CI_Model {
     		}
     	}
     	log_message('error', 'tweet_model_imgs------------'.var_export($imgs, true));
-    	$tweet['img'] = json_encode($imgs);
     	
+    	//todo 暂时优先tweet里的图片数据，如果tweet里没有数据再用resource里的img数据填充。待素材导入迁移后删除
+    	$tweet['imgs'] = json_encode($imgs);
+    
     	return $tweet;
     }
     
