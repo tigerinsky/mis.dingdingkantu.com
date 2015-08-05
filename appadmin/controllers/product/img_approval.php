@@ -13,6 +13,7 @@ class img_approval extends MY_Controller{
 //         $this->load->library('redis');
 //         $this->key_img = 'mis_img_timestamp';
         $this->load->model('product/img_approval_model', 'img_approval_model');
+        $this->load->model('product/resource_model', 'resource_model');
         $this->load->model('product/user_detail_model', 'user_detail_model');
     }
     
@@ -92,6 +93,18 @@ class img_approval extends MY_Controller{
     function test() {
     	$request = $this->request_array;
     	$response = $this->response_array;
+    	
+    	$args_data = $request['args_data'];
+    	
+    	log_message('error', 'args_data:'.var_export($args_data, true));
+    	
+    	
+    	$response['data'] = array(
+    			'content' => $args_data,
+    	);
+    	
+    	$this->renderJson($response['errno'], $response['data']);
+    	
     	
     	$tids = $request['tids'];
     	$tid_array = explode(',', $tids);
@@ -235,17 +248,74 @@ class img_approval extends MY_Controller{
     /**
      * 对外提供的接口
      * 审核贴子的接口
-     * 参数：tid,base_value
+     * 参数：[
+			  {
+			  "tid":614271483723657200,
+			  "base_value":10
+			  },
+			  {
+			  "tid":614271483723657200,
+			  "base_value":10
+			  },
+			  {
+			  "tid":614271483723657200,
+			  "base_value":10
+			  }
+			]
      * 返回成功或失败
      */
     function tweet_approval(){
     	$request = $this->request_array;
     	$response = $this->response_array;
+    	
+    	$args_data = $request['args_data'];
+    	$args_data = json_decode($args_data, true);
+    	
+    	$result = array();
+    	foreach($args_data as $item) {
+    		$tid = $item['tid'];
+    		$base_value = $item['base_value'];
+    		$result[] = $this->img_approval_model->approval_tweet($tid, $base_value);
+    	}
+    	
     
-    	$tid = $request['tid'];
-    	$base_value = $request['base_value'];
+    	$response['data'] = array(
+    			'content' => $result,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
+    }
     
-    	$result = $this->img_approval_model->approval_tweet($tid, $base_value);
+    
+    
+//     function tweet_approval(){
+//     	$request = $this->request_array;
+//     	$response = $this->response_array;
+    
+//     	$tid = $request['tid'];
+//     	$base_value = $request['base_value'];
+    
+//     	$result = $this->img_approval_model->approval_tweet($tid, $base_value);
+    
+//     	$response['data'] = array(
+//     			'content' => $result,
+//     	);
+//     	$this->renderJson($response['errno'], $response['data']);
+//     }
+    
+    
+    /**
+     * 对外提供的接口
+     * 删除贴子的接口
+     * 参数：tid,tid,tid
+     * 返回成功或失败
+     */
+    function tweet_delete(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
+    	
+    	$tids = $request['tids'];
+    	$tid_array = explode(',', $tids);
+    	$result = $this->img_approval_model->delete_tweet($tid_array);
     
     	$response['data'] = array(
     			'content' => $result,
@@ -256,17 +326,38 @@ class img_approval extends MY_Controller{
     
     /**
      * 对外提供的接口
-     * 删除贴子的接口
-     * 参数：tid,base_value
+     * 裁剪贴子的接口
+     * 参数：
+		a.tid
+		b.左上角经度lon
+		c.左上角纬度lat
+		d.图片的宽度width
+		e.图片的高度height(由于是正方形，宽高一样)
      * 返回成功或失败
      */
-    function tweet_delete(){
+    function tweet_cut(){
     	$request = $this->request_array;
     	$response = $this->response_array;
     	
-    	$tids = $request['tids'];
-    	$tid_array = explode(',', $tids);
-    	$result = $this->img_approval_model->delete_tweet($tid_array);
+    	$tid = $request['tid'];
+    	$lon = $request['lon'];
+    	$lat = $request['lat'];
+    	$width = $request['width'];
+    	$height = $width;
+    	
+    	$tweet = $this->img_approval_model->get_tweet_info($tid);
+    	$img_arr = json_decode($tweet['img'], true);
+    	log_message('debug', 'img_arr:'.json_encode($img_arr));
+    	$img_url = $img_arr[0]['n']['url'];
+    	log_message('debug', 'img_url:'.$img_url);
+    	$img_url = $img_url + '@' + $lon + '-' + $lat + '-' + $width + '-' + $height + 'a';
+    	log_message('debug', 'img_url:'.var_export($img_url, true));
+    	
+    	$img_arr[0]['n']['url'] = $img_url;
+    	$resource_id = explode(',', $tweet['resource_id'])[0];
+    	$data = array('img' => json_encode($img_arr));
+    	//log_message('debug', 'data:'.json_encode($data));
+    	//$result = $this->resource_model->update($resource_id, $data);
     
     	$response['data'] = array(
     			'content' => $result,

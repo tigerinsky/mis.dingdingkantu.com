@@ -23,6 +23,21 @@ class Resource_model extends CI_Model {
         }
         return false;
     }
+    
+    /**
+     * update resource
+     *
+     * @return true/false
+     */
+    function update($rid, $data) {
+    	$this->db->where('rid', $rid);
+    	$result = $this->db->update($this->table_name, $data);
+    	log_message('debug', 'resource_update:'.var_export($result, true));
+    	if((false === $result) || (0 == $this->db->affected_rows())) {
+    		return 0;
+    	}
+    	return $this->db->affected_rows();
+    }
 
     /**
      * get resource by rid
