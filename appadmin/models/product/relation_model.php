@@ -322,5 +322,20 @@ class Relation_model extends CI_Model {
     	
     }
     
+    
+    /**
+     * 机器人互动：赞
+     * @param str $where 查询条件
+     * @param str $limit 条数筛选
+     * @return int $data 分会符合条件二维数组
+     */
+    public function get_zan_by_parm($uid_list_str, $limit){
+    	//$query_data="SELECT `tid`, `uid`, `content`, `ctime`, `is_del`, `dtime`, `resource_id`, `score`, `lon`, `lat`, `achievement_type`, `achievement_name`, `achievement_ctime`, `current_poi_name`, `city`, `approval`, `base_value`, `source`, `interaction` FROM ci_tweet {$where} ORDER BY ctime DESC {$limit}";
+    	$query_data="select distinct uid,owner_id from ci_tweet_action where action_type = 2 and owner_id in({$uid_list_str}) and not exists(select 1 from ci_user_relation where (a_uid = owner_id and b_uid = uid and a_follow_b != 0) or (a_uid = uid and b_uid = owner_id and b_follow_a != 0)) {$limit}";
+    	$result_data=$this->dbr->query($query_data);
+    	$list_data=$result_data->result_array();
+    	return $list_data;
+    }
+    
 
 }

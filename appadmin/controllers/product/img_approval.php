@@ -390,8 +390,8 @@ class img_approval extends MY_Controller{
     
     /**
      * 对外提供的接口
-     * 机器上互动
-     * 真人关注机器人，机器上没有关注真人的列出来
+     * 机器人互动
+     * 真人关注机器人，机器人没有关注真人的列出来
      * 
      */
     function interaction_relation(){
@@ -420,9 +420,6 @@ class img_approval extends MY_Controller{
     		$robot_uid_list[] = $robot_uid;
     	}
     	
-    	$pagesize = 10;
-    	$offset = $pagesize*($page-1);
-    	$limit = "LIMIT $offset,$pagesize";
     	$relation_result = $this->relation_model->get_follower_list_by_robot_uid_list($robot_uid_list, $rn, $rn * $pn);
     	
     	$res_content = array();
@@ -462,6 +459,90 @@ class img_approval extends MY_Controller{
     	}
     	
      	//log_message('debug', 'data:'.json_encode($data));
+    
+    	$response['data'] = array(
+    			'content' => $res_content,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
+    }
+    
+    
+    /**
+     * 对外提供的接口
+     * 机器人互动
+     * 真人赞过机器人发的帖子，机器人没有关注真人的列出来
+     *
+     */
+    function interaction_zan(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
+    	 
+    	$page = $request['page'];
+        $page = max(intval($page),1);
+    	 
+    	// 获取机器人列表
+    	$where_array = array();
+    	$where_array[] = "login_type = 2";
+    	 
+    	if(is_array($where_array) and count($where_array)>0){
+    		$where=' WHERE '.join(' AND ', $where_array);
+    	}
+    	 
+    	$robot_num = $this->user_detail_model->get_count_by_parm($where);
+    	$limit = "LIMIT 0,$robot_num";
+    	$robot_list = $this->user_detail_model->get_robot_list($where, $limit);
+    	
+    	$robot_uid_list = array();
+    	foreach($robot_list as $robot) {
+    		$robot_uid = $robot['id'];
+    		$robot_uid_list[] = $robot_uid;
+    	}
+    	
+    	$robot_uid_list_str = implode(',', $robot_uid_list);
+    	
+    	$pagesize = 10;
+    	$offset = $pagesize*($page-1);
+    	$limit = "LIMIT $offset,$pagesize";
+    	
+    	$zan_result = $this->relation_model->get_zan_by_parm($robot_uid_list_str, $limit);
+    	
+    	$res_content = array();
+    	foreach($zan_result as $item) {
+    		$real_uid = $item['uid'];
+    		$robot_uid = $item['owner_id'];
+    		# 机器人信息
+    		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
+    		if (isset($user_detail_info_robot['avatar'])) {
+    			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
+    			if ($arr_img_info_robot && isset($arr_img_info_robot['img']) && isset($arr_img_info_robot['img']['n']) && isset($arr_img_info_robot['img']['n']['url'])) {
+    				$user_detail_info_robot['avatar'] = $arr_img_info_robot['img']['n']['url'];
+    			} else {
+    				$user_detail_info_robot['avatar'] ="";
+    			}
+    		}
+    		# 真人信息
+    		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
+	    	if (isset($user_detail_info_real['avatar'])) {
+	    		$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
+	    		if ($arr_img_info_real && isset($arr_img_info_real['img']) && isset($arr_img_info_real['img']['n']) && isset($arr_img_info_real['img']['n']['url'])) {
+	    			$user_detail_info_real['avatar'] = $arr_img_info_real['img']['n']['url'];
+	    		} else {
+	    			$user_detail_info_real['avatar'] ="";
+	    		}
+    		}
+    
+    		$res_content[] = array(
+    		'robot_uid' => $user_detail_info_robot['uid'],
+    		'robot_sname' => $user_detail_info_robot['sname'],
+    		'robot_avatar' => $user_detail_info_robot['avatar'],
+    		'real_uid' => $user_detail_info_real['uid'],
+    		'real_sname' => $user_detail_info_real['sname'],
+    		'real_avatar' => $user_detail_info_real['avatar'],
+    		);
+    
+    	}
+    	 
+    	//log_message('debug', 'data:'.json_encode($data));
     
     	$response['data'] = array(
     			'content' => $res_content,
