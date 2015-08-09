@@ -347,20 +347,40 @@ class img_approval extends MY_Controller{
     	$width = $request['width'];
     	$height = $width;
     	
+    	$suffix = '@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
+    	
     	$tweet = $this->img_approval_model->get_tweet_info($tid);
     	$img_arr = json_decode($tweet['imgs'], true);
     	log_message('debug', 'img_arr:'.json_encode($img_arr));
-    	$img_url = $img_arr[0]['n']['url'];
-    	log_message('debug', 'img_url:'.$img_url);
-    	$img_url = $img_url.'@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
-    	log_message('debug', 'img_url_cut:'.$img_url);
+    	$img_url_n = $img_arr[0]['n']['url'];
+    	$img_url_t = $img_arr[0]['t']['url'];
+    	$img_url_s = $img_arr[0]['s']['url'];
+    	// 判断是否已经裁剪过,$flag的值为1表示已经裁剪过
+    	$pattern = '/(\w+)@(\d+)-(\d+)-(\d+)-(\d+)a/i';
+    	$flag = preg_match($pattern, $img_url_n);
+    	if ($flag) {
+    		$replacement = '${1}'.$suffix;
+    		$img_url_n = preg_replace($pattern, $replacement, $img_url_n);
+    		$img_url_t = preg_replace($pattern, $replacement, $img_url_t);
+    		$img_url_s = preg_replace($pattern, $replacement, $img_url_s);
+    	} else {
+    		$img_url_n = $img_url_n.'@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
+    		$img_url_t = $img_url_t.'@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
+    		$img_url_s = $img_url_s.'@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
+    	}
     	
-    	$img_arr[0]['n']['url'] = $img_url;
+    	$img_arr[0]['n']['url'] = $img_url_n;
+    	$img_arr[0]['t']['url'] = $img_url_t;
+    	$img_arr[0]['s']['url'] = $img_url_s;
     	$resource_id = explode(',', $tweet['resource_id'])[0];
     	$data = array('img' => json_encode($img_arr[0]));
     	log_message('debug', 'data:'.json_encode($data));
     	$result = $this->resource_model->update($resource_id, $data);
-    
+    	// 清掉redis中当前tweet的缓存
+    	$this->load->library('redis');
+    	$tweet_key = 'tweet_'.$tid;
+    	$this->redis->delete($tweet_key);
+    	
     	$response['data'] = array(
     			'content' => $result,
     	);
