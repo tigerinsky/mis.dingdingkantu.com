@@ -117,7 +117,7 @@ class Img_approval_model extends CI_Model {
     
     function approval_tweet($tid, $base_value) {
     	$this->db->where('tid', $tid);
-    	$data = array('base_value' => $base_value);
+    	$data = array('base_value' => $base_value, 'approval' => 1);
     	$result = $this->db->update($this->table_name, $data);
     	log_message('error', 'approval_result:'.var_export($result, true));
     	if((false === $result) || (0 == $this->db->affected_rows())) {
