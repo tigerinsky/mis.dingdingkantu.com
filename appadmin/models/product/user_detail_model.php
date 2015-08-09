@@ -65,5 +65,30 @@ class User_detail_model extends CI_Model {
 
         return true;
     }
+    
+    /**
+     * 查询机器人列表
+     * @param str $where 查询条件
+     * @param str $limit 条数筛选
+     * @return int $data 分会符合条件二维数组
+     */
+    public function get_robot_list($where, $limit){
+    	$query_data="SELECT `id`, `login_type` FROM ci_user {$where} ORDER BY create_time DESC {$limit}";
+    	$result_data=$this->dbr->query($query_data);
+    	$list_data=$result_data->result_array();
+    	return $list_data;
+    }
+    
+    /**
+     * 计算出筛选条件下的数据的条数
+     * @param int $where 查询条件
+     * @return int $data 返回数据的条数
+     */
+    public function get_count_by_parm($where){
+    	$query_data="SELECT count(id) as nums FROM ci_user {$where}";
+    	$result_data=$this->dbr->query($query_data);
+    	$row_data=$result_data->row_array();
+    	return $row_data['nums'];
+    }
 
 }

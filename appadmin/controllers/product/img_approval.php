@@ -15,6 +15,7 @@ class img_approval extends MY_Controller{
         $this->load->model('product/img_approval_model', 'img_approval_model');
         $this->load->model('product/resource_model', 'resource_model');
         $this->load->model('product/user_detail_model', 'user_detail_model');
+        $this->load->model('product/relation_model', 'relation_model');
     }
     
     //默认调用控制器
@@ -367,7 +368,73 @@ class img_approval extends MY_Controller{
     }
     
     
+    /**
+     * 对外提供的接口
+     * 机器上互动
+     * 真人关注机器人，机器上没有关注真人的列出来
+     * 
+     */
+    function interaction_relation(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
+    	
+    	$pn = $request['pn'];
+    	$rn = $request['rn'];
+    	
+    	// 获取机器人列表
+    	$where_array = array();
+    	$where_array[] = "login_type = 2";
+    	
+    	if(is_array($where_array) and count($where_array)>0){
+    		$where=' WHERE '.join(' AND ', $where_array);
+    	}
+    	
+    	$robot_num = $this->user_detail_model->get_count_by_parm($where);
+    	$limit = "LIMIT 0,$robot_num";
+    	$robot_list = $this->user_detail_model->get_robot_list($where, $limit);
+    	
+    	
+    	$robot_uid_list = array();
+    	foreach($robot_list as $robot) {
+    		$robot_uid = $robot['id'];
+    		$robot_uid_list[] = $robot_uid;
+    	}
+    	
+    	$pagesize = 10;
+    	$offset = $pagesize*($page-1);
+    	$limit = "LIMIT $offset,$pagesize";
+    	$result = $this->relation_model->get_follower_list_by_robot_uid_list($robot_uid_list, $rn, $rn * $pn);
+    	
+    	
+
+    	
+    	
+    	
+//     	$tid = $request['tid'];
+//     	$lon = $request['lon'];
+//     	$lat = $request['lat'];
+//     	$width = $request['width'];
+//     	$height = $width;
+    	 
+//     	$tweet = $this->img_approval_model->get_tweet_info($tid);
+//     	$img_arr = json_decode($tweet['imgs'], true);
+//     	log_message('debug', 'img_arr:'.json_encode($img_arr));
+//     	$img_url = $img_arr[0]['n']['url'];
+//     	log_message('debug', 'img_url:'.$img_url);
+//     	$img_url = $img_url.'@'.$lon.'-'.$lat.'-'.$width.'-'.$height.'a';
+//     	log_message('debug', 'img_url_cut:'.$img_url);
+    	 
+//     	$img_arr[0]['n']['url'] = $img_url;
+//     	$resource_id = explode(',', $tweet['resource_id'])[0];
+//     	$data = array('img' => json_encode($img_arr[0]));
+//     	log_message('debug', 'data:'.json_encode($data));
+//     	$result = $this->resource_model->update($resource_id, $data);
     
+    	$response['data'] = array(
+    			'content' => $result,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
+    }
     
     
     
