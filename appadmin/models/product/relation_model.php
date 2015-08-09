@@ -305,7 +305,7 @@ class Relation_model extends CI_Model {
      * @param int offset 偏移量
      */
     function get_follower_list_by_robot_uid_list($uid_list, $limit, $offset) {
-    	$this->db->select('a_uid, b_uid, a_follow_b, b_follow_a');
+    	$this->db->select('id, a_uid, b_uid, a_follow_b, b_follow_a');
     	$this->db->where('a_follow_b !=', 0);
     	$this->db->where('b_follow_a =', 0);
     	$this->db->where_in('b_uid', $uid_list);
@@ -320,50 +320,6 @@ class Relation_model extends CI_Model {
     	}
     	return $result->result_array();
     	
-    	
-    	
-    	
-//     	if (false === $result) {
-//     		return false;
-//     	}
-//     	$user_num = $result->num_rows;
-//     	$arr_rtn = array();
-//     	$arr_result = $result->result_array();
-    
-//     	for ($i = 0, $j = $offset; $i < $limit && $j < $user_num;$i++, $j++) {
-//     		$arr_rtn[] = array(
-//     				'uid'   => $arr_result[$j]['a_uid'],
-//     				'follow_type'   => $arr_result[$j]['b_follow_a'] != 0,
-//     		);
-//     	}
-    
-    
-//     	$rtn_size = count($arr_result);
-//     	if ($rtn_size >= $limit) {
-//     		return $arr_rtn;
-//     	}
-//     	$offset -= $user_num;
-//     	if ($offset < 0) {
-//     		$offset = 0;
-//     	}
-//     	$limit -= $rtn_size;
-    
-//     	$this->db->select('b_uid, a_follow_b');
-//     	$this->db->where('a_uid', $uid);
-//     	$this->db->where('b_follow_a !=', 0);
-//     	$this->db->limit($limit, $offset);
-//     	$result = $this->db->get($this->table_name);
-//     	if (false === $result) {
-//     		return false;
-//     	}
-//     	foreach ($result->result_array() as $item) {
-//     		$arr_rtn[] = array(
-//     				'uid'   => $item['b_uid'],
-//     				'follow_type'   => $item['a_follow_b'] != 0,
-//     		);
-//     	}
-    
-//     	return $arr_rtn;
     }
     
 
