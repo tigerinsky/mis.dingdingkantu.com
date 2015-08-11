@@ -426,7 +426,7 @@ class img_approval extends MY_Controller{
     	foreach($relation_result as $item) {
     		$real_uid = $item['a_uid'];
     		$robot_uid = $item['b_uid'];
-    		# 机器人信息
+    		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
     		if (isset($user_detail_info_robot['avatar'])) {
     			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
@@ -436,7 +436,7 @@ class img_approval extends MY_Controller{
     				$user_detail_info_robot['avatar'] ="";
     			}
     		}
-    		# 真人信息
+    		// 真人信息
     		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
     		if (isset($user_detail_info_real['avatar'])) {
     			$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
@@ -509,8 +509,9 @@ class img_approval extends MY_Controller{
     	$res_content = array();
     	foreach($zan_result as $item) {
     		$real_uid = $item['uid'];
+    		$tid = $item['tid'];
     		$robot_uid = $item['owner_id'];
-    		# 机器人信息
+    		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
     		if (isset($user_detail_info_robot['avatar'])) {
     			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
@@ -520,7 +521,7 @@ class img_approval extends MY_Controller{
     				$user_detail_info_robot['avatar'] ="";
     			}
     		}
-    		# 真人信息
+    		// 真人信息
     		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
 	    	if (isset($user_detail_info_real['avatar'])) {
 	    		$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
@@ -530,14 +531,24 @@ class img_approval extends MY_Controller{
 	    			$user_detail_info_real['avatar'] ="";
 	    		}
     		}
+    		
+    		// 帖子信息
+    		$tid = $item['tid'];
+    		$tweet = $this->img_approval_model->get_tweet_info($tid);
+    		$img_arr = json_decode($tweet['imgs'], true);
+    		$img_url = $img_arr[0]['n']['url'];
+    		$img_url_s = $img_arr[0]['s']['url'];
     
     		$res_content[] = array(
-    		'robot_uid' => $user_detail_info_robot['uid'],
-    		'robot_sname' => $user_detail_info_robot['sname'],
-    		'robot_avatar' => $user_detail_info_robot['avatar'],
-    		'real_uid' => $user_detail_info_real['uid'],
-    		'real_sname' => $user_detail_info_real['sname'],
-    		'real_avatar' => $user_detail_info_real['avatar'],
+		    		'robot_uid' => $user_detail_info_robot['uid'],
+		    		'robot_sname' => $user_detail_info_robot['sname'],
+		    		'robot_avatar' => $user_detail_info_robot['avatar'],
+    				'tid' => $tid,
+    				'img_url' => $img_url,
+    				'img_url_s' => $img_url_s,
+		    		'real_uid' => $user_detail_info_real['uid'],
+		    		'real_sname' => $user_detail_info_real['sname'],
+		    		'real_avatar' => $user_detail_info_real['avatar'],
     		);
     
     	}
