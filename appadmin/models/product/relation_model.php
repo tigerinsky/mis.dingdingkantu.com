@@ -337,5 +337,21 @@ class Relation_model extends CI_Model {
     	return $list_data;
     }
     
+    
+    /**
+     * 机器人互动：评论
+     * @param str $where 查询条件
+     * @param str $limit 条数筛选
+     * @return int $data 分会符合条件二维数组
+     */
+    public function get_cmt_by_parm($uid_list_str, $limit){
+    	//$query_data="SELECT `tid`, `uid`, `content`, `ctime`, `is_del`, `dtime`, `resource_id`, `score`, `lon`, `lat`, `achievement_type`, `achievement_name`, `achievement_ctime`, `current_poi_name`, `city`, `approval`, `base_value`, `source`, `interaction` FROM ci_tweet {$where} ORDER BY ctime DESC {$limit}";
+    	//$query_data="select distinct uid,tid,owner_id from ci_tweet_action where action_type = 2 and owner_id in({$uid_list_str}) and not exists(select 1 from ci_user_relation where (a_uid = owner_id and b_uid = uid and a_follow_b != 0) or (a_uid = uid and b_uid = owner_id and b_follow_a != 0)) {$limit}";
+    	$query_data="select from_uid,to_uid,action_type,content_id,ctime from ci_system_message as c1 where action_type in (2,3) and c1.to_uid in({$uid_list_str}) and ((not exists(select 1 from ci_system_message as c2 where action_type in (2,3) and c2.from_uid = c1.to_uid and c2.to_uid = c1.from_uid)) or c1.ctime > (select max(ctime) from ci_system_message as c3 where action_type in (2,3) and c3.from_uid = c1.to_uid and c3.to_uid = c1.from_uid)) {$limit}";
+    	$result_data=$this->dbr->query($query_data);
+    	$list_data=$result_data->result_array();
+    	return $list_data;
+    }
+    
 
 }

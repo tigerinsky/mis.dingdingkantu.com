@@ -16,6 +16,7 @@ class img_approval extends MY_Controller{
         $this->load->model('product/resource_model', 'resource_model');
         $this->load->model('product/user_detail_model', 'user_detail_model');
         $this->load->model('product/relation_model', 'relation_model');
+        $this->load->model('product/comment_model', 'comment_model');
     }
     
     //默认调用控制器
@@ -553,6 +554,108 @@ class img_approval extends MY_Controller{
     
     	}
     	 
+    	//log_message('debug', 'data:'.json_encode($data));
+    
+    	$response['data'] = array(
+    			'content' => $res_content,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
+    }
+    
+    
+    /**
+     * 对外提供的接口
+     * 机器人互动
+     * 真人评论过机器人发的帖子，机器人没有回复真人，或者机器人回复真人后，真人又回评了机器人
+     *
+     */
+    function interaction_cmt(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
+    
+    	$page = $request['page'];
+    	$page = max(intval($page),1);
+    
+    	// 获取机器人列表
+    	$where_array = array();
+    	$where_array[] = "login_type = 2";
+    
+    	if(is_array($where_array) and count($where_array)>0){
+    		$where=' WHERE '.join(' AND ', $where_array);
+    	}
+    
+    	$robot_num = $this->user_detail_model->get_count_by_parm($where);
+    	$limit = "LIMIT 0,$robot_num";
+    	$robot_list = $this->user_detail_model->get_robot_list($where, $limit);
+    	 
+    	$robot_uid_list = array();
+    	foreach($robot_list as $robot) {
+    		$robot_uid = $robot['id'];
+    		$robot_uid_list[] = $robot_uid;
+    	}
+    	 
+    	$robot_uid_list_str = implode(',', $robot_uid_list);
+    	 
+    	$pagesize = 10;
+    	$offset = $pagesize*($page-1);
+    	$limit = "LIMIT $offset,$pagesize";
+    	 
+    	$cmt_result = $this->relation_model->get_cmt_by_parm($robot_uid_list_str, $limit);
+    	 
+    	$res_content = array();
+    	foreach($cmt_result as $item) {
+    		$real_uid = $item['from_uid'];
+    		$cid = $item['content_id'];
+    		$robot_uid = $item['to_uid'];
+    		// 机器人信息
+    		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
+    		if (isset($user_detail_info_robot['avatar'])) {
+    			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
+    			if ($arr_img_info_robot && isset($arr_img_info_robot['img']) && isset($arr_img_info_robot['img']['n']) && isset($arr_img_info_robot['img']['n']['url'])) {
+    				$user_detail_info_robot['avatar'] = $arr_img_info_robot['img']['n']['url'];
+    			} else {
+    				$user_detail_info_robot['avatar'] ="";
+    			}
+    		}
+    		// 真人信息
+    		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
+    		if (isset($user_detail_info_real['avatar'])) {
+    			$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
+    			if ($arr_img_info_real && isset($arr_img_info_real['img']) && isset($arr_img_info_real['img']['n']) && isset($arr_img_info_real['img']['n']['url'])) {
+    				$user_detail_info_real['avatar'] = $arr_img_info_real['img']['n']['url'];
+    			} else {
+    				$user_detail_info_real['avatar'] ="";
+    			}
+    		}
+    		
+    		// 评论信息
+    		$comment = $this->comment_model->get_detail_by_cid($cid);
+    		$cmt_content = $comment['content'];
+    		$cmt_ctime = $comment['ctime'];
+    		$tid = $comment['tid'];
+    
+    		// 帖子信息
+    		$tweet = $this->img_approval_model->get_tweet_info($tid);
+    		$img_arr = json_decode($tweet['imgs'], true);
+    		$img_url = $img_arr[0]['n']['url'];
+    		$img_url_s = $img_arr[0]['s']['url'];
+    
+    		$res_content[] = array(
+    				'robot_uid' => $user_detail_info_robot['uid'],
+    				'robot_sname' => $user_detail_info_robot['sname'],
+    				'robot_avatar' => $user_detail_info_robot['avatar'],
+    				'tid' => $tid,
+    				'img_url' => $img_url,
+    				'img_url_s' => $img_url_s,
+    				'cid' => $cid,
+    				'content' => $cmt_content,
+    				'real_uid' => $user_detail_info_real['uid'],
+    				'real_sname' => $user_detail_info_real['sname'],
+    				'real_avatar' => $user_detail_info_real['avatar'],
+    		);
+    
+    	}
+    
     	//log_message('debug', 'data:'.json_encode($data));
     
     	$response['data'] = array(
