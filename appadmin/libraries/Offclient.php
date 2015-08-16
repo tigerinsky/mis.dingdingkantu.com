@@ -29,7 +29,7 @@ class Offclient{
     * @Return : boolean
     */
     public function connect() {
-        $this->socket = new TSocket('mhback1', 9029);
+        $this->socket = new TSocket('mhback1', 9030);
         $this->socket->setSendTimeout(10000);
         $this->socket->setRecvTimeout(20000);
 
@@ -59,8 +59,16 @@ class Offclient{
             $ps_request->tweet_info->type = isset($post_params['type']) ? $post_params['type'] : -1;
             $ps_request->tweet_info->f_catalog = isset($post_params['f_catalog']) ? $post_params['f_catalog'] : '';
             $ps_request->tweet_info->s_catalog = isset($post_params['s_catalog']) ? $post_params['s_catalog'] : '';
-            $ps_request->tweet_info->resources = isset($post_params['resource']) ? $post_params['resource'] : array();
-
+            $ps_request->tweet_info->resource_id = isset($post_params['resource_id']) ? $post_params['resource_id'] : '';
+            $resources = isset($post_params['resource']) ? $post_params['resource'] : array();
+            $ps_request->tweet_info->resources = array();
+            foreach ($resources as $res_str) {
+                $res = new \offhub\ResourceStruct();
+                $res->rid = $res_str['rid'];
+                $res->img = $res_str['img'];
+                $res->description = $res_str['description'];
+                $ps_request->tweet_info->resources[] = $res;
+            }
             $this->connect();     
             $res = $this->client->SendNewPost($ps_request);
             $this->dis_connect();
@@ -146,6 +154,23 @@ class Offclient{
         }
     }
 
+    public function UpdateFriendQueue($params) {
+        try {
+            $request = new \offhub\FriendMsgRequest();
+            $request->uid = isset($params['uid']) ? $params['uid'] : 0;
+            $request->tid = isset($params['tid']) ? $params['tid'] : 0;
+            $request->msg_type = isset($params['msg_type']) ? $params['msg_type'] : 0;
+            $request->timestamp = isset($params['timestamp']) ? $params['timestamp'] : time();
+
+            $this->connect();
+            $this->client->UpdateFriendQueue($request);
+            $this->dis_connect();
+        } catch (Exception $e) {
+            log_message('error', __METHOD__.':'.__LINE__
+                    .'update friend queue error, msg['.$e->getMessage().']');
+        }
+    }
+
     public function ClearRedEvent($params) {
         try {
             $request = new \offhub\ClearRedRequest();
@@ -188,30 +213,6 @@ class Offclient{
             $this->dis_connect();
         } catch (Exception $e) {
             log_message('error', __METHOD__.':'.__LINE__.' follow_new_event error, msg['.$e->getMessage().']');
-        }
-    }
-
-    public function MisPushEvent($params) {
-        try {
-            $request = new \offhub\MisPushRequest();
-            $request->title = isset($params['title']) ? $params['title']:'';
-            $request->content = isset($params['content']) ? $params['content']:'';//必传，请在controller层校验，如果没有内容，不能推
-            $request->type = isset($params['type']) ? $params['type']:1;//必传，请在controller层校验，保证是1-6之间数字
-            $request->tid = isset($params['tid']) ? $params['tid']:0;
-            $request->url = isset($params['url']) ? $params['url']:'';
-            $request->send_time = isset($params['send_time']) ?  $params['send_time']: 0;
-            $request->push_task_id = isset($params['push_task_id']) ?  $params['push_task_id']:0;
-            $request->device_type = isset($params['device_type']) ? $params['device_type']:0;
-            $request->city = isset($params['city']) ? $params['city']:'';//如果不是广播必传，请在controller层保证有选择city
-            $request->school = isset($params['school']) ? $params['school']:'';//如果不是广播必传，请在controller层保证
-            $request->ukind_verify = isset($params['ukind_verify']) ? $params['ukind_verify']:'';//必传请在controller保证
-            $request->is_broadcast = isset($params['is_broadcast']) ?$params['is_broadcast']: 0;//是否是广播，1是广播，0不是。广播表示给所有设备推送
-
-            $this->connect();
-            $this->client->MisPushEvent($request);
-            $this->dis_connect();
-        }catch (Exception $e) {
-            log_message('error', __METHOD__.':'.__LINE__.' mis push event error, msg['.$e->getMessage().']');
         }
     }
 }

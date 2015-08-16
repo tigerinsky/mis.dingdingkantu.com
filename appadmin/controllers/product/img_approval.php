@@ -12,6 +12,7 @@ class img_approval extends MY_Controller{
 //         // $this->mis_imgmgr['imgmgr_level_1']
 //         $this->load->library('redis');
 //         $this->key_img = 'mis_img_timestamp';
+        $this->load->library('offclient');
         $this->load->model('product/img_approval_model', 'img_approval_model');
         $this->load->model('product/resource_model', 'resource_model');
         $this->load->model('product/user_detail_model', 'user_detail_model');
@@ -254,14 +255,17 @@ class img_approval extends MY_Controller{
      * 参数：[
 			  {
 			  "tid":614271483723657200,
+			  "uid":7,
 			  "base_value":10
 			  },
 			  {
 			  "tid":614271483723657200,
+			  "uid":7,
 			  "base_value":10
 			  },
 			  {
 			  "tid":614271483723657200,
+			  "uid":7,
 			  "base_value":10
 			  }
 			]
@@ -277,8 +281,17 @@ class img_approval extends MY_Controller{
     	$result = array();
     	foreach($args_data as $item) {
     		$tid = $item['tid'];
+    		$uid = $item['uid'];
     		$base_value = $item['base_value'];
     		$result[] = $this->img_approval_model->approval_tweet($tid, $base_value);
+    		// 更新用户队列
+    		$arr_tweet_info = array(
+    				'tid'   => $tid,
+    				'uid'   => $uid,
+    				'msg_type'  => 0,   // new tweet
+    				'timestamp' => time(),
+    		);
+    		$this->offclient->UpdateFriendQueue($arr_tweet_info);
     	}
     	
     
