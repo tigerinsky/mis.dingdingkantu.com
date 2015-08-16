@@ -562,6 +562,48 @@ class img_approval extends MY_Controller{
     }
     
     
+    /**
+     * 对外提供的接口
+     * 批量关注的接口
+     * 参数：[
+     {
+     "a_uid":15,
+     "b_uid":60
+     },
+     {
+     "a_uid":15,
+     "b_uid":61
+     },
+     {
+     "a_uid":15,
+     "b_uid":62
+     }
+     ]
+     * 返回成功或失败
+     */
+    function relation_batch_follow(){
+    	$request = $this->request_array;
+    	$response = $this->response_array;
+    	 
+    	$args_data = $request['args_data'];
+    	$args_data = json_decode($args_data, true);
+    	 
+    	$result = array();
+    	foreach($args_data as $item) {
+    		$a_uid = $item['a_uid'];
+    		$b_uid = $item['b_uid'];
+    		$get_url = URL_PREFIX.'/relation/follow?followee_uid='.$b_uid.'&follower_uid='.$a_uid;
+    		$follow_data = json_decode(curl_get_contents($get_url), true);
+    		$result[] = $follow_data;
+    	}
+    	
+    	$response['data'] = array(
+    			'content' => $result,
+    	);
+    	$this->renderJson($response['errno'], $response['data']);
+    }
+    
+    
     
     /**
      * ajax调用的函数

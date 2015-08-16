@@ -60,4 +60,5 @@ define('TIPS_FOCUS_STAGE',       5);
 /* End of file constants.php */
 /* Location: ./application/config/constants.php */
 define('ULR_PROX',       'http://mis.dingdingkantu.com');
+define('URL_PREFIX',       'http://182.92.212.76:8034');
 
