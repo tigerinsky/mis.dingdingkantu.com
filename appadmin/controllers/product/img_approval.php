@@ -538,6 +538,8 @@ class img_approval extends MY_Controller{
     		$img_arr = json_decode($tweet['imgs'], true);
     		$img_url = $img_arr[0]['n']['url'];
     		$img_url_s = $img_arr[0]['s']['url'];
+    		// 帖子内容
+    		$tweet_content = $img_arr[0]['content'];
     
     		$res_content[] = array(
 		    		'robot_uid' => $user_detail_info_robot['uid'],
@@ -546,6 +548,7 @@ class img_approval extends MY_Controller{
     				'tid' => $tid,
     				'img_url' => $img_url,
     				'img_url_s' => $img_url_s,
+    				'tweet_content' => $tweet_content,
 		    		'real_uid' => $user_detail_info_real['uid'],
 		    		'real_sname' => $user_detail_info_real['sname'],
 		    		'real_avatar' => $user_detail_info_real['avatar'],
@@ -634,6 +637,8 @@ class img_approval extends MY_Controller{
     		$img_arr = json_decode($tweet['imgs'], true);
     		$img_url = $img_arr[0]['n']['url'];
     		$img_url_s = $img_arr[0]['s']['url'];
+    		// 帖子内容
+    		$tweet_content = $img_arr[0]['content'];
     
     		$res_content[] = array(
     				'robot_uid' => $user_detail_info_robot['uid'],
@@ -642,6 +647,7 @@ class img_approval extends MY_Controller{
     				'tid' => $tid,
     				'img_url' => $img_url,
     				'img_url_s' => $img_url_s,
+    				'tweet_content' => $tweet_content,
     				'cid' => $cid,
     				'content' => $cmt_content,
     				'real_uid' => $user_detail_info_real['uid'],
