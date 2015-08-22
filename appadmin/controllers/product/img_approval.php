@@ -396,8 +396,9 @@ class img_approval extends MY_Controller{
     	$request = $this->request_array;
     	$response = $this->response_array;
     	
-    	$pn = $request['pn'];
-    	$rn = $request['rn'];
+    	$page = $request['page'];
+    	$pn = $request['page'] - 1;
+    	$rn = 10;
     	
     	// 获取机器人列表
     	$where_array = array();
