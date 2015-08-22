@@ -427,13 +427,13 @@ class img_approval extends MY_Controller{
     	$relation_result_v1 = $this->relation_model->get_follower_list_v1($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
     	//获取失败
     	if (false === $relation_result_v1) {
-    		$response['errno'] = 1;
+    		//$response['errno'] = 1;
     		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v1 error.');
     		goto level2;
     	}
     	//没有数据
     	if(empty($relation_result_v1)) {
-    		$response['errno'] = 1;
+    		//$response['errno'] = 1;
     		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v1 error.');
     		goto level2;
     	}
@@ -460,13 +460,13 @@ class img_approval extends MY_Controller{
     	$relation_result_v2 = $this->relation_model->get_follower_list_v2($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
     	//获取失败
     	if (false === $relation_result_v2) {
-    		$response['errno'] = 1;
+    		//$response['errno'] = 1;
     		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v2 error.');
     		goto end;
     	}
     	//没有数据
     	if(empty($relation_result_v2)) {
-    		$response['errno'] = 1;
+    		//$response['errno'] = 1;
     		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v2 error.');
     		goto end;
     	}
