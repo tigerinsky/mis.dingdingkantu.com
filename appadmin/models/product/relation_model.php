@@ -323,54 +323,42 @@ class Relation_model extends CI_Model {
      * @param int limit 每页显示条数
      * @param int offset 偏移量
      */
-    function get_follower_list_v1($uid_list, $start_time, $end_time, $limit, $offset) {
-    	$this->db->select('id, a_uid, b_uid, a_follow_b, b_follow_a');
-    	$this->db->where('b_follow_a =', 0);
-    	$this->db->where('a_follow_b >=', $start_time);
-    	$this->db->where('a_follow_b <=', $end_time);
-    	$this->db->where_in('b_uid', $uid_list);
-    	$this->db->limit($limit, $offset);
-    	
-    	$result = $this->db->get($this->table_name);
-    	log_message('debug', $this->db->last_query());
-    	if(false === $result) {
-    		return false;
-    	}else if(0 == $result->num_rows) {
-    		return null;
-    	}
-    	return $result->result_array();
-    	
+    public function get_relation_by_parm($uid_list_str, $start_time, $end_time, $limit){
+    	$query_data = "select a_uid, b_uid, a_follow_b, b_follow_a from ci_user_relation where (b_follow_a = 0 and a_follow_b >= {$start_time} and a_follow_b <= {$end_time} and b_uid in({$uid_list_str})) or (a_follow_b = 0 and b_follow_a >= {$start_time} and b_follow_a <= {$end_time} and a_uid in({$uid_list_str})) {$limit}";
+    	$result_data = $this->dbr->query($query_data);
+    	$list_data = $result_data->result_array();
+    	return $list_data;
     }
     
+//     /**
+//      * 机器人互动：关注
+//      * 获取机器人粉丝列表
+//      * 返回真人关注机器人，机器上没有关注真人
+//      * 假设a_uid为真人, b_uid为机器人
+//      *
+//      * @param string uid 用户id
+//      * @param int limit 每页显示条数
+//      * @param int offset 偏移量
+//      */
+//     function get_follower_list_v1($uid_list, $start_time, $end_time, $limit, $offset) {
+//     	$this->db->select('id, a_uid, b_uid, a_follow_b, b_follow_a');
+//     	$this->db->where('b_follow_a =', 0);
+//     	$this->db->where('a_follow_b >=', $start_time);
+//     	$this->db->where('a_follow_b <=', $end_time);
+//     	$this->db->where_in('b_uid', $uid_list);
+//     	$this->db->limit($limit, $offset);
+    	
+//     	$result = $this->db->get($this->table_name);
+//     	log_message('debug', $this->db->last_query());
+//     	if(false === $result) {
+//     		return false;
+//     	}else if(0 == $result->num_rows) {
+//     		return null;
+//     	}
+//     	return $result->result_array();
+    	
+//     }
     
-    /**
-     * 机器人互动：关注
-     * 获取机器人粉丝列表
-     * 返回真人关注机器人，机器上没有关注真人
-     * 假设a_uid为机器人, b_uid为真人
-     *
-     * @param string uid 用户id
-     * @param int limit 每页显示条数
-     * @param int offset 偏移量
-     */
-    function get_follower_list_v2($uid_list, $start_time, $end_time, $limit, $offset) {
-    	$this->db->select('id, a_uid, b_uid, a_follow_b, b_follow_a');
-    	$this->db->where('a_follow_b =', 0);
-    	$this->db->where('b_follow_a >=', $start_time);
-    	$this->db->where('b_follow_a <=', $end_time);
-    	$this->db->where_in('a_uid', $uid_list);
-    	$this->db->limit($limit, $offset);
-    	
-    	$result = $this->db->get($this->table_name);
-    	log_message('debug', $this->db->last_query());
-    	if(false === $result) {
-    		return false;
-    	}else if(0 == $result->num_rows) {
-    		return null;
-    	}
-    	return $result->result_array();
-    	
-    }
     
     
     /**

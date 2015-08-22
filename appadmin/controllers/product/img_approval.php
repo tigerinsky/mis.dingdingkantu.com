@@ -399,9 +399,9 @@ class img_approval extends MY_Controller{
     	$start_time = $request['start_time'];
     	$end_time = $request['end_time'];
     	
+    	
     	$page = $request['page'];
-    	$pn = $request['page'] - 1;
-    	$rn = 10;
+    	$page = max(intval($page),1);
     	
     	// 获取机器人列表
     	$where_array = array();
@@ -414,74 +414,38 @@ class img_approval extends MY_Controller{
     	$robot_num = $this->user_detail_model->get_count_by_parm($where);
     	$limit = "LIMIT 0,$robot_num";
     	$robot_list = $this->user_detail_model->get_robot_list($where, $limit);
-    	
-    	
+    	 
     	$robot_uid_list = array();
     	foreach($robot_list as $robot) {
     		$robot_uid = $robot['id'];
     		$robot_uid_list[] = $robot_uid;
     	}
-    	
+    	 
     	$robot_uid_list_str = implode(',', $robot_uid_list);
+    	
+    	$pagesize = 10;
+    	$offset = $pagesize*($page-1);
+    	$limit = "LIMIT $offset,$pagesize";
+    	
     	$relation_num = $this->relation_model->get_relation_count_by_parm($robot_uid_list_str, $start_time, $end_time);
     	// 总页数
-    	$pages = intval($relation_num/$rn);
-    	$mod = $relation_num%$rn;
+    	$pages = intval($relation_num/$pagesize);
+    	$mod = $relation_num%$pagesize;
     	if ($mod!=0) {
     		$pages = $pages + 1;
     	}
-    	
+    	 
+    	$relation_result = $this->relation_model->get_relation_by_parm($robot_uid_list_str, $start_time, $end_time, $limit);
+    	 
     	$res_content = array();
-    	
-    	$relation_result_v1 = $this->relation_model->get_follower_list_v1($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
-    	//获取失败
-    	if (false === $relation_result_v1) {
-    		//$response['errno'] = 1;
-    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v1 error.');
-    		goto level2;
-    	}
-    	//没有数据
-    	if(empty($relation_result_v1)) {
-    		//$response['errno'] = 1;
-    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v1 error.');
-    		goto level2;
-    	}
-    	foreach($relation_result_v1 as $item) {
-    		$real_uid = $item['a_uid'];
-    		$robot_uid = $item['b_uid'];
-    		// 机器人信息
-    		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
-    		// 真人信息
-    		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
-    		
-    		$res_content[] = array(
-    				'robot_uid' => $user_detail_info_robot['uid'],
-    				'robot_sname' => $user_detail_info_robot['sname'],
-    				'robot_avatar' => $user_detail_info_robot['avatar'],
-    				'real_uid' => $user_detail_info_real['uid'],
-    				'real_sname' => $user_detail_info_real['sname'],
-    				'real_avatar' => $user_detail_info_real['avatar'],
-    		);
-    		
-    	}
-    	
-    	level2:
-    	$relation_result_v2 = $this->relation_model->get_follower_list_v2($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
-    	//获取失败
-    	if (false === $relation_result_v2) {
-    		//$response['errno'] = 1;
-    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v2 error.');
-    		goto end;
-    	}
-    	//没有数据
-    	if(empty($relation_result_v2)) {
-    		//$response['errno'] = 1;
-    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v2 error.');
-    		goto end;
-    	}
-    	foreach($relation_result_v2 as $item) {
-    		$real_uid = $item['b_uid'];
-    		$robot_uid = $item['a_uid'];
+    	foreach($relation_result as $item) {
+    		if ($item['b_follow_a'] == 0) {
+    			$real_uid = $item['a_uid'];
+    			$robot_uid = $item['b_uid'];
+    		} else if ($item['a_follow_b'] == 0) {
+    			$real_uid = $item['b_uid'];
+    			$robot_uid = $item['a_uid'];
+    		}
     		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
     		// 真人信息
@@ -499,7 +463,6 @@ class img_approval extends MY_Controller{
     	}
     	
      	//log_message('debug', 'data:'.json_encode($data));
-    
     	end:
     	$response['data'] = array(
     			'content' => $res_content,
