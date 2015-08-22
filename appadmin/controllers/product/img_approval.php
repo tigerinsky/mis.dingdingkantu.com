@@ -422,6 +422,15 @@ class img_approval extends MY_Controller{
     		$robot_uid_list[] = $robot_uid;
     	}
     	
+    	$robot_uid_list_str = implode(',', $robot_uid_list);
+    	$relation_num = $this->relation_model->get_relation_count_by_parm($robot_uid_list_str, $start_time, $end_time);
+    	// 总页数
+    	$pages = intval($relation_num/$rn);
+    	$mod = $relation_num%$rn;
+    	if ($mod!=0) {
+    		$pages = $pages + 1;
+    	}
+    	
     	$res_content = array();
     	
     	$relation_result_v1 = $this->relation_model->get_follower_list_v1($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
@@ -494,6 +503,7 @@ class img_approval extends MY_Controller{
     	end:
     	$response['data'] = array(
     			'content' => $res_content,
+    			'pages' => $pages,
     	);
     	$this->renderJson($response['errno'], $response['data']);
     }
@@ -539,6 +549,14 @@ class img_approval extends MY_Controller{
     	$offset = $pagesize*($page-1);
     	$limit = "LIMIT $offset,$pagesize";
     	
+    	$zan_num = $this->relation_model->get_zan_count_by_parm($robot_uid_list_str, $start_time, $end_time);
+    	// 总页数
+    	$pages = intval($zan_num/$pagesize);
+    	$mod = $zan_num%$pagesize;
+    	if ($mod!=0) {
+    		$pages = $pages + 1;
+    	}
+    	
     	$zan_result = $this->relation_model->get_zan_by_parm($robot_uid_list_str, $start_time, $end_time, $limit);
     	
     	$res_content = array();
@@ -576,6 +594,7 @@ class img_approval extends MY_Controller{
     
     	$response['data'] = array(
     			'content' => $res_content,
+    			'pages' => $pages,
     	);
     	$this->renderJson($response['errno'], $response['data']);
     }
@@ -620,6 +639,14 @@ class img_approval extends MY_Controller{
     	$pagesize = 10;
     	$offset = $pagesize*($page-1);
     	$limit = "LIMIT $offset,$pagesize";
+    	
+    	$cmt_num = $this->relation_model->get_cmt_count_by_parm($robot_uid_list_str, $start_time, $end_time);
+    	// 总页数
+    	$pages = intval($cmt_num/$pagesize);
+    	$mod = $cmt_num%$pagesize;
+    	if ($mod!=0) {
+    		$pages = $pages + 1;
+    	}
     	 
     	$cmt_result = $this->relation_model->get_cmt_by_parm($robot_uid_list_str, $start_time, $end_time, $limit);
     	 
@@ -665,6 +692,7 @@ class img_approval extends MY_Controller{
     
     	$response['data'] = array(
     			'content' => $res_content,
+    			'pages' => $pages,
     	);
     	$this->renderJson($response['errno'], $response['data']);
     }

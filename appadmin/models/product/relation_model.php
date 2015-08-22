@@ -296,7 +296,25 @@ class Relation_model extends CI_Model {
     }
     
     
+    
+    
+    
+    
     /**
+     * 机器人互动：关注
+     * 计算出筛选条件下的数据的条数
+     * @param int $where 查询条件
+     * @return int $data 返回数据的条数
+     */
+    public function get_relation_count_by_parm($uid_list_str, $start_time, $end_time){
+    	$query_data = "select count(*) as nums from ci_user_relation where (b_follow_a = 0 and a_follow_b >= {$start_time} and a_follow_b <= {$end_time} and b_uid in({$uid_list_str})) or (a_follow_b = 0 and b_follow_a >= {$start_time} and b_follow_a <= {$end_time} and a_uid in({$uid_list_str}))";
+    	$result_data = $this->dbr->query($query_data);
+    	$row_data = $result_data->row_array();
+    	return $row_data['nums'];
+    }
+    
+    /**
+     * 机器人互动：关注
      * 获取机器人粉丝列表
      * 返回真人关注机器人，机器上没有关注真人
      * 假设a_uid为真人, b_uid为机器人
@@ -326,6 +344,7 @@ class Relation_model extends CI_Model {
     
     
     /**
+     * 机器人互动：关注
      * 获取机器人粉丝列表
      * 返回真人关注机器人，机器上没有关注真人
      * 假设a_uid为机器人, b_uid为真人
@@ -356,6 +375,20 @@ class Relation_model extends CI_Model {
     
     /**
      * 机器人互动：赞
+     * 计算出筛选条件下的数据的条数
+     * @param int $where 查询条件
+     * @return int $data 返回数据的条数
+     */
+    public function get_zan_count_by_parm($uid_list_str, $start_time, $end_time){
+    	$query_data="select count(distinct uid,tid,owner_id) as nums from ci_tweet_action where action_type = 2 and ctime >= {$start_time} and ctime <= {$end_time} and owner_id in({$uid_list_str}) and not exists(select 1 from ci_user_relation where (a_uid = owner_id and b_uid = uid and a_follow_b != 0) or (a_uid = uid and b_uid = owner_id and b_follow_a != 0))";
+    	$result_data = $this->dbr->query($query_data);
+    	$row_data = $result_data->row_array();
+    	return $row_data['nums'];
+    }
+    
+    
+    /**
+     * 机器人互动：赞
      * @param str $where 查询条件
      * @param str $limit 条数筛选
      * @return int $data 分会符合条件二维数组
@@ -368,6 +401,19 @@ class Relation_model extends CI_Model {
     	return $list_data;
     }
     
+    
+    /**
+     * 机器人互动：评论
+     * 计算出筛选条件下的数据的条数
+     * @param int $where 查询条件
+     * @return int $data 返回数据的条数
+     */
+    public function get_cmt_count_by_parm($uid_list_str, $start_time, $end_time){
+    	$query_data="select count(*) as nums from ci_system_message as c1 where c1.ctime >= {$start_time} and c1.ctime <= {$end_time} and action_type in (2,3) and c1.to_uid in({$uid_list_str}) and ((not exists(select 1 from ci_system_message as c2 where action_type in (2,3) and c2.from_uid = c1.to_uid and c2.to_uid = c1.from_uid)) or c1.ctime > (select max(ctime) from ci_system_message as c3 where action_type in (2,3) and c3.from_uid = c1.to_uid and c3.to_uid = c1.from_uid))";
+    	$result_data = $this->dbr->query($query_data);
+    	$row_data = $result_data->row_array();
+    	return $row_data['nums'];
+    }
     
     /**
      * 机器人互动：评论
