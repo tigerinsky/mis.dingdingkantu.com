@@ -396,6 +396,9 @@ class img_approval extends MY_Controller{
     	$request = $this->request_array;
     	$response = $this->response_array;
     	
+    	$start_time = $request['start_time'];
+    	$end_time = $request['end_time'];
+    	
     	$page = $request['page'];
     	$pn = $request['page'] - 1;
     	$rn = 10;
@@ -419,12 +422,32 @@ class img_approval extends MY_Controller{
     		$robot_uid_list[] = $robot_uid;
     	}
     	
-    	$relation_result = $this->relation_model->get_follower_list_by_robot_uid_list($robot_uid_list, $rn, $rn * $pn);
-    	
     	$res_content = array();
-    	foreach($relation_result as $item) {
+    	
+    	$relation_result_v1 = $this->relation_model->get_follower_list_v1($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
+    	foreach($relation_result_v1 as $item) {
     		$real_uid = $item['a_uid'];
     		$robot_uid = $item['b_uid'];
+    		// 机器人信息
+    		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
+    		// 真人信息
+    		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
+    		
+    		$res_content[] = array(
+    				'robot_uid' => $user_detail_info_robot['uid'],
+    				'robot_sname' => $user_detail_info_robot['sname'],
+    				'robot_avatar' => $user_detail_info_robot['avatar'],
+    				'real_uid' => $user_detail_info_real['uid'],
+    				'real_sname' => $user_detail_info_real['sname'],
+    				'real_avatar' => $user_detail_info_real['avatar'],
+    		);
+    		
+    	}
+    	
+    	$relation_result_v2 = $this->relation_model->get_follower_list_v2($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
+    	foreach($relation_result_v2 as $item) {
+    		$real_uid = $item['b_uid'];
+    		$robot_uid = $item['a_uid'];
     		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
     		// 真人信息
@@ -459,7 +482,10 @@ class img_approval extends MY_Controller{
     function interaction_zan(){
     	$request = $this->request_array;
     	$response = $this->response_array;
-    	 
+    	
+    	$start_time = $request['start_time'];
+    	$end_time = $request['end_time'];
+    	
     	$page = $request['page'];
         $page = max(intval($page),1);
     	 
@@ -487,7 +513,7 @@ class img_approval extends MY_Controller{
     	$offset = $pagesize*($page-1);
     	$limit = "LIMIT $offset,$pagesize";
     	
-    	$zan_result = $this->relation_model->get_zan_by_parm($robot_uid_list_str, $limit);
+    	$zan_result = $this->relation_model->get_zan_by_parm($robot_uid_list_str, $start_time, $end_time, $limit);
     	
     	$res_content = array();
     	foreach($zan_result as $item) {
@@ -538,7 +564,10 @@ class img_approval extends MY_Controller{
     function interaction_cmt(){
     	$request = $this->request_array;
     	$response = $this->response_array;
-    
+    	
+    	$start_time = $request['start_time'];
+    	$end_time = $request['end_time'];
+    	
     	$page = $request['page'];
     	$page = max(intval($page),1);
     
@@ -566,7 +595,7 @@ class img_approval extends MY_Controller{
     	$offset = $pagesize*($page-1);
     	$limit = "LIMIT $offset,$pagesize";
     	 
-    	$cmt_result = $this->relation_model->get_cmt_by_parm($robot_uid_list_str, $limit);
+    	$cmt_result = $this->relation_model->get_cmt_by_parm($robot_uid_list_str, $start_time, $end_time, $limit);
     	 
     	$res_content = array();
     	foreach($cmt_result as $item) {
