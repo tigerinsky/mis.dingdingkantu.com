@@ -51,6 +51,7 @@ class Resource_model extends CI_Model {
         $this->db->limit(1);
         
         $result = $this->db->get($this->table_name);
+        log_message('error', 'get_resource_by_rid:'.$this->db->last_query());
         if(false === $result) {
             return false;
         }else if(0 == $result->num_rows) {

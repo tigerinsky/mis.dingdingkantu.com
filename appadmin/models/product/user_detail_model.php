@@ -37,7 +37,7 @@ class User_detail_model extends CI_Model {
         return $result->result_array()[0];
     }
 
-    function get_info_by_uid($uid, $fields = '*') {
+    function get_info_by_uid($uid, $fields = '*', $avater_type = 0) {
         $this->db->select($fields);
         $this->db->where('uid', $uid);
         $result = $this->db->get($this->table_name);
@@ -51,6 +51,10 @@ class User_detail_model extends CI_Model {
             return NULL;
         }
         $arr_res = $result->result_array()[0];
+
+        if (isset($arr_res['avatar'])) {
+            $arr_res['avatar'] = $this->__process_img_by_type($arr_res['avatar'], $avater_type);
+        }
 
         return $arr_res;
     }
@@ -91,4 +95,30 @@ class User_detail_model extends CI_Model {
     	return $row_data['nums'];
     }
 
+    /* avatar_type  : 0: small; 1: normal */
+    public function __process_img_by_type($arr_img, $avatar_type) {
+        $str_img = '';
+        switch ($avatar_type) {
+        case 0:
+            $arr_img_info = json_decode($arr_img, true);
+            if ($arr_img_info
+                && isset($arr_img_info['img'])
+                && isset($arr_img_info['img']['s'])
+                && isset($arr_img_info['img']['s']['url'])) {
+                    $str_img = $arr_img_info['img']['s']['url'];
+                }
+            break;
+        case 1:
+            $arr_img_info = json_decode($user_detail_info['avatar'], true);
+            if ($arr_img_info
+                && isset($arr_img_info['img'])
+                && isset($arr_img_info['img']['n'])
+                && isset($arr_img_info['img']['n']['url'])) {
+                    $str_img = $arr_img_info['img']['n']['url'];
+                }
+            break;
+        }
+
+        return $str_img;
+    }
 }

@@ -57,8 +57,34 @@ define('TIPS_ROOM_TYPE',         2);
 define('TIPS_MATERIAL_TYPE',     3);
 define('TIPS_MATERIAL_POSITION', 4);
 define('TIPS_FOCUS_STAGE',       5);
-/* End of file constants.php */
-/* Location: ./application/config/constants.php */
+
+/**
+ * Dingding常量配置
+ */
+
+//通用状态码
+define('STATUS_OK', 0); 
+define('ERR_REQUEST_EMPTY', 1); 
+define('ERR_RESPONSE_FALSE', 2); 
+define('ERR_RESPONSE_EMPTY', 3);
+
+//MYSQL操作
+define('ERR_MYSQL_CONNECT', 101);
+define('ERR_MYSQ_SELECT', 102);
+define('ERR_MYSQL_INSERT', 103);
+define('ERR_MYSQL_UPDATE', 104);
+define('ERR_MYSQL_DELETE', 105);
+
+//真人互动
+define('ROBOT_NUM', 6);
+define('TWEET_LIST_SIZE', 10);
+define('DIALOG_DEFAULT_PAGE_NUM', 10);
+define('K_TALK_LIST', 'talk_list_');
+
+//URL
 define('ULR_PROX',       'http://mis.dingdingkantu.com');
 define('URL_PREFIX',       'http://182.92.212.76:8034');
+/* End of file constants.php */
+/* Location: ./application/config/constants.php */
+
 

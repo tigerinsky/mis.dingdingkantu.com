@@ -126,14 +126,6 @@ class img_approval extends MY_Controller{
     	//print_r(json_encode($data));
     	
     	$user_detail_info = $this->user_detail_model->get_info_by_uid($uid);
-    	if (isset($user_detail_info['avatar'])) {
-    		$arr_img_info = json_decode($user_detail_info['avatar'], true);
-    		if ($arr_img_info && isset($arr_img_info['img']) && isset($arr_img_info['img']['n']) && isset($arr_img_info['img']['n']['url'])) {
-    			$user_detail_info['avatar'] = $arr_img_info['img']['n']['url'];
-    		} else {
-    			$user_detail_info['avatar'] ="";
-    		}
-    	}
     	
     	print_r(json_encode($user_detail_info));
     	
@@ -215,14 +207,6 @@ class img_approval extends MY_Controller{
         	# 用户信息
         	$uid = $item['uid'];
         	$user_detail_info = $this->user_detail_model->get_info_by_uid($uid);
-        	if (isset($user_detail_info['avatar'])) {
-        		$arr_img_info = json_decode($user_detail_info['avatar'], true);
-        		if ($arr_img_info && isset($arr_img_info['img']) && isset($arr_img_info['img']['n']) && isset($arr_img_info['img']['n']['url'])) {
-        			$user_detail_info['avatar'] = $arr_img_info['img']['n']['url'];
-        		} else {
-        			$user_detail_info['avatar'] ="";
-        		}
-        	}
         
         	$res_content[] = array(
         			'tid' => $tid,
@@ -442,24 +426,8 @@ class img_approval extends MY_Controller{
     		$robot_uid = $item['b_uid'];
     		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
-    		if (isset($user_detail_info_robot['avatar'])) {
-    			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
-    			if ($arr_img_info_robot && isset($arr_img_info_robot['img']) && isset($arr_img_info_robot['img']['n']) && isset($arr_img_info_robot['img']['n']['url'])) {
-    				$user_detail_info_robot['avatar'] = $arr_img_info_robot['img']['n']['url'];
-    			} else {
-    				$user_detail_info_robot['avatar'] ="";
-    			}
-    		}
     		// 真人信息
     		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
-    		if (isset($user_detail_info_real['avatar'])) {
-    			$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
-    			if ($arr_img_info_real && isset($arr_img_info_real['img']) && isset($arr_img_info_real['img']['n']) && isset($arr_img_info_real['img']['n']['url'])) {
-    				$user_detail_info_real['avatar'] = $arr_img_info_real['img']['n']['url'];
-    			} else {
-    				$user_detail_info_real['avatar'] ="";
-    			}
-    		}
     		
     		$res_content[] = array(
     				'robot_uid' => $user_detail_info_robot['uid'],
@@ -527,24 +495,8 @@ class img_approval extends MY_Controller{
     		$robot_uid = $item['owner_id'];
     		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
-    		if (isset($user_detail_info_robot['avatar'])) {
-    			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
-    			if ($arr_img_info_robot && isset($arr_img_info_robot['img']) && isset($arr_img_info_robot['img']['n']) && isset($arr_img_info_robot['img']['n']['url'])) {
-    				$user_detail_info_robot['avatar'] = $arr_img_info_robot['img']['n']['url'];
-    			} else {
-    				$user_detail_info_robot['avatar'] ="";
-    			}
-    		}
     		// 真人信息
     		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
-	    	if (isset($user_detail_info_real['avatar'])) {
-	    		$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
-	    		if ($arr_img_info_real && isset($arr_img_info_real['img']) && isset($arr_img_info_real['img']['n']) && isset($arr_img_info_real['img']['n']['url'])) {
-	    			$user_detail_info_real['avatar'] = $arr_img_info_real['img']['n']['url'];
-	    		} else {
-	    			$user_detail_info_real['avatar'] ="";
-	    		}
-    		}
     		
     		// 帖子信息
     		$tid = $item['tid'];
@@ -622,24 +574,8 @@ class img_approval extends MY_Controller{
     		$robot_uid = $item['to_uid'];
     		// 机器人信息
     		$user_detail_info_robot = $this->user_detail_model->get_info_by_uid($robot_uid);
-    		if (isset($user_detail_info_robot['avatar'])) {
-    			$arr_img_info_robot = json_decode($user_detail_info_robot['avatar'], true);
-    			if ($arr_img_info_robot && isset($arr_img_info_robot['img']) && isset($arr_img_info_robot['img']['n']) && isset($arr_img_info_robot['img']['n']['url'])) {
-    				$user_detail_info_robot['avatar'] = $arr_img_info_robot['img']['n']['url'];
-    			} else {
-    				$user_detail_info_robot['avatar'] ="";
-    			}
-    		}
     		// 真人信息
     		$user_detail_info_real = $this->user_detail_model->get_info_by_uid($real_uid);
-    		if (isset($user_detail_info_real['avatar'])) {
-    			$arr_img_info_real = json_decode($user_detail_info_real['avatar'], true);
-    			if ($arr_img_info_real && isset($arr_img_info_real['img']) && isset($arr_img_info_real['img']['n']) && isset($arr_img_info_real['img']['n']['url'])) {
-    				$user_detail_info_real['avatar'] = $arr_img_info_real['img']['n']['url'];
-    			} else {
-    				$user_detail_info_real['avatar'] ="";
-    			}
-    		}
     		
     		// 评论信息
     		$comment = $this->comment_model->get_detail_by_cid($cid);
