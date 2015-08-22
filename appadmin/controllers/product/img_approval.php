@@ -425,6 +425,18 @@ class img_approval extends MY_Controller{
     	$res_content = array();
     	
     	$relation_result_v1 = $this->relation_model->get_follower_list_v1($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
+    	//获取失败
+    	if (false === $relation_result_v1) {
+    		$response['errno'] = 1;
+    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v1 error.');
+    		goto level2;
+    	}
+    	//没有数据
+    	if(empty($relation_result_v1)) {
+    		$response['errno'] = 1;
+    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v1 error.');
+    		goto level2;
+    	}
     	foreach($relation_result_v1 as $item) {
     		$real_uid = $item['a_uid'];
     		$robot_uid = $item['b_uid'];
@@ -444,7 +456,20 @@ class img_approval extends MY_Controller{
     		
     	}
     	
+    	level2:
     	$relation_result_v2 = $this->relation_model->get_follower_list_v2($robot_uid_list, $start_time, $end_time, $rn, $rn * $pn);
+    	//获取失败
+    	if (false === $relation_result_v2) {
+    		$response['errno'] = 1;
+    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v2 error.');
+    		goto end;
+    	}
+    	//没有数据
+    	if(empty($relation_result_v2)) {
+    		$response['errno'] = 1;
+    		log_message('info', __METHOD__ .':'.__LINE__.' get_follower_list_v2 error.');
+    		goto end;
+    	}
     	foreach($relation_result_v2 as $item) {
     		$real_uid = $item['b_uid'];
     		$robot_uid = $item['a_uid'];
@@ -466,6 +491,7 @@ class img_approval extends MY_Controller{
     	
      	//log_message('debug', 'data:'.json_encode($data));
     
+    	end:
     	$response['data'] = array(
     			'content' => $res_content,
     	);
